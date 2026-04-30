@@ -51,4 +51,55 @@
   .tabular {
     font-variant-numeric: tabular-nums;
   }
+
+  /* Status text shimmer — sharper gradient sweep with high-contrast bright band. */
+  .shimmer-text {
+    background: linear-gradient(
+      100deg,
+      rgb(var(--ink-muted) / 0.55) 30%,
+      rgb(var(--ink)) 50%,
+      rgb(var(--ink-muted) / 0.55) 70%
+    );
+    background-size: 250% 100%;
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    animation: shimmer-sweep 1.6s linear infinite;
+  }
+
+  /* Animated ellipsis — three dots appear in sequence, fade out together. */
+  .dots-loader {
+    display: inline-block;
+    margin-left: 1px;
+  }
+  .dots-loader > .dot {
+    opacity: 0;
+    animation: dot-cumulative 1.4s infinite;
+  }
+  .dots-loader > .dot:nth-child(2) {
+    animation-delay: 0.15s;
+  }
+  .dots-loader > .dot:nth-child(3) {
+    animation-delay: 0.3s;
+  }
+}
+
+@keyframes shimmer-sweep {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes dot-cumulative {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  20%,
+  80% {
+    opacity: 1;
+  }
 }

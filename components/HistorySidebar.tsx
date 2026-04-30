@@ -203,7 +203,12 @@ function ExpandedView({
         confirmLabel="Delete"
         destructive
         onConfirm={() => {
-          if (pendingDelete) deleteHistory(pendingDelete.id);
+          if (pendingDelete) {
+            const wasViewing = pendingDelete.id === currentId;
+            deleteHistory(pendingDelete.id);
+            // If user was viewing the deleted chat, send them home 
+            if (wasViewing) router.push("/");
+          }
           setPendingDelete(null);
         }}
         onCancel={() => setPendingDelete(null)}
@@ -218,6 +223,9 @@ function ExpandedView({
         onConfirm={() => {
           clearHistory();
           setPendingClear(false);
+          // If user on search page, the entry they're viewing was just nuked
+          // send them home
+          if (currentId) router.push("/");
         }}
         onCancel={() => setPendingClear(false)}
       />

@@ -7,10 +7,17 @@ type Props = {
   answer: string;
   sources: Source[];
   query: string;
+  expanded?: boolean;
   onSourcesClick?: () => void;
 };
 
-export function AnswerActions({ answer, sources, query, onSourcesClick }: Props) {
+export function AnswerActions({
+  answer,
+  sources,
+  query,
+  expanded = false,
+  onSourcesClick,
+}: Props) {
   const [copied, setCopied] = useState(false);
   const [shared, setShared] = useState(false);
 
@@ -50,7 +57,12 @@ export function AnswerActions({ answer, sources, query, onSourcesClick }: Props)
         <button
           type="button"
           onClick={onSourcesClick}
-          className="inline-flex items-center gap-2 rounded-full border border-border bg-bg px-3 py-1.5 text-[13px] text-ink-muted transition-colors hover:border-border-hover hover:text-ink"
+          aria-expanded={expanded}
+          className={`inline-flex items-center gap-2 rounded-full border bg-bg px-3 py-1.5 text-[13px] transition-colors ${
+            expanded
+              ? "border-border-hover text-ink"
+              : "border-border text-ink-muted hover:border-border-hover hover:text-ink"
+          }`}
         >
           <span className="flex -space-x-1.5">
             {sources.slice(0, 3).map((s) => (
@@ -68,6 +80,20 @@ export function AnswerActions({ answer, sources, query, onSourcesClick }: Props)
           <span className="font-medium">
             {sources.length} {sources.length === 1 ? "source" : "sources"}
           </span>
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            className={`h-3 w-3 transition-transform ${expanded ? "rotate-180" : ""}`}
+            aria-hidden
+          >
+            <path
+              d="M6 9l6 6 6-6"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
         </button>
       ) : null}
 
