@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { FormEvent, useState } from "react";
+import { appendHistory } from "@/lib/history";
 
 type Props = {
   initialValue?: string;
@@ -17,7 +18,11 @@ export function SearchInput({ initialValue = "", size = "lg", autoFocus = false 
     e.preventDefault();
     const q = value.trim();
     if (!q) return;
-    router.push(`/search?q=${encodeURIComponent(q)}`);
+    // Append to history first, then navigate to /search/{id}. The id is the
+    // UUID stored alongside the query in localStorage.
+    const id = appendHistory(q);
+    if (!id) return;
+    router.push(`/search/${id}`);
   }
 
   const heightClass = size === "lg" ? "h-14" : "h-11";

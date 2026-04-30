@@ -3,17 +3,17 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { SearchResults } from "@/components/SearchResults";
 
 type Props = {
-  searchParams: Promise<{ q?: string }> | { q?: string };
+  params: Promise<{ id: string }> | { id: string };
 };
 
-export default async function SearchPage({ searchParams }: Props) {
-  const params = await searchParams;
-  const q = (params.q ?? "").trim();
+export default async function SearchPage({ params }: Props) {
+  const p = await params;
+  const id = (p.id ?? "").trim();
 
-  if (!q) {
+  if (!id) {
     return (
       <main className="mx-auto max-w-[640px] px-6 py-24">
-        <p className="text-ink-muted">No query.</p>
+        <p className="text-ink-muted">No search id.</p>
         <Link href="/" className="mt-4 inline-block text-accent underline">
           Back to search
         </Link>
@@ -27,7 +27,7 @@ export default async function SearchPage({ searchParams }: Props) {
         <ThemeToggle />
       </header>
       <div className="mx-auto max-w-[860px] px-6 pb-16 pt-12">
-        <SearchResults query={q} />
+        <SearchResults id={id} />
       </div>
     </main>
   );

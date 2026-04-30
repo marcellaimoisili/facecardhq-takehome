@@ -1,10 +1,12 @@
 "use client";
 
 import { Fragment, useMemo } from "react";
+import type { Source } from "@/server/search/types";
 import { CitationChip } from "./CitationChip";
 
 type Props = {
   text: string;
+  sources: Source[];
   onCitationClick?: (n: number) => void;
 };
 
@@ -35,9 +37,14 @@ function tokenize(text: string): Token[] {
   return tokens;
 }
 
-export function Answer({ text, onCitationClick }: Props) {
+export function Answer({ text, sources, onCitationClick }: Props) {
   const tokens = useMemo(() => tokenize(text), [text]);
   const paragraphs = useMemo(() => splitParagraphs(tokens), [tokens]);
+  const sourcesById = useMemo(() => {
+    const map = new Map<number, Source>();
+    for (const s of sources) map.set(s.id, s);
+    return map;
+  }, [sources]);
 
   return (
     <div className="prose-answer max-w-answer space-y-4 text-[16px] leading-[1.65] text-ink">
@@ -46,10 +53,18 @@ export function Answer({ text, onCitationClick }: Props) {
           {para.map((tok, ti) => {
             if (tok.kind === "text") return <Fragment key={ti}>{tok.value}</Fragment>;
             return (
-              <span key={ti} className="inline-flex items-center">
-                {tok.nums.map((n, ni) => (
-                  <CitationChip key={ni} n={n} onClick={onCitationClick} />
-                ))}
+              <span key={ti} className="inline-flex flex-wrap items-baseline gap-1">
+                {tok.nums.map((n, ni) => {
+                  const source = sourcesById.get(n);
+                  if (!source) return null;
+                  return (
+                    <CitationChip
+                      key={ni}
+                      source={source}
+                      onClick={() => onCitationClick?.(n)}
+                    />
+                  );
+                })}
               </span>
             );
           })}

@@ -1,9 +1,11 @@
 export type HistoryItem = {
+  /** Unique id (UUID) for this history entry. Used in URLs: /search/{id}. */
+  id: string;
   /** The actual query to run when clicked. */
   query: string;
   /** Optional user-renamed display label. Falls back to `query`. */
   label?: string;
-  /** Unix ms; doubles as the unique id. */
+  /** Unix ms; used for sorting. */
   ts: number;
 };
 
@@ -25,41 +27,63 @@ export function readHistory(): HistoryItem[] {
     if (!raw) return [];
     const parsed = JSON.parse(raw);
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (h): h is HistoryItem =>
-        typeof h?.query === "string" && typeof h?.ts === "number",
-    );
+    // Migrate old entries that didn't have an id.
+    return parsed
+      .filter(
+        (h) =>
+          h && typeof h === "object" && typeof h.query === "string" && typeof h.ts === "number",
+      )
+      .map((h) => ({
+        id: typeof h.id === "string" ? h.id : safeUUID(),
+        query: h.query as string,
+        label: typeof h.label === "string" ? h.label : undefined,
+        ts: h.ts as number,
+      }));
   } catch {
     return [];
   }
 }
 
-export function appendHistory(query: string) {
-  if (typeof window === "undefined") return;
+/**
+ * Append (or move-to-top) a query in history. Returns the id of the entry,
+ * which the caller uses to navigate to /search/{id}.
+ */
+export function appendHistory(query: string): string {
+  if (typeof window === "undefined") return "";
   const trimmed = query.trim();
-  if (!trimmed) return;
+  if (!trimmed) return "";
   const existing = readHistory();
   const found = existing.find((h) => h.query === trimmed);
-  const others = existing.filter((h) => h.query !== trimmed);
-  const next = [
-    { query: trimmed, ts: Date.now(), label: found?.label },
-    ...others,
-  ].slice(0, MAX);
+  if (found) {
+    // Already in history — move to top, refresh ts, keep id and label.
+    const others = existing.filter((h) => h.id !== found.id);
+    const next = [{ ...found, ts: Date.now() }, ...others].slice(0, MAX);
+    write(next);
+    return found.id;
+  }
+  // New entry.
+  const id = safeUUID();
+  const next = [{ id, query: trimmed, ts: Date.now() }, ...existing].slice(0, MAX);
   write(next);
+  return id;
 }
 
-export function renameHistory(ts: number, label: string) {
+export function findById(id: string): HistoryItem | undefined {
+  return readHistory().find((h) => h.id === id);
+}
+
+export function renameHistory(id: string, label: string) {
   if (typeof window === "undefined") return;
   const trimmed = label.trim();
   const next = readHistory().map((h) =>
-    h.ts === ts ? { ...h, label: trimmed || undefined } : h,
+    h.id === id ? { ...h, label: trimmed || undefined } : h,
   );
   write(next);
 }
 
-export function deleteHistory(ts: number) {
+export function deleteHistory(id: string) {
   if (typeof window === "undefined") return;
-  const next = readHistory().filter((h) => h.ts !== ts);
+  const next = readHistory().filter((h) => h.id !== id);
   write(next);
 }
 
@@ -79,4 +103,12 @@ export function subscribeToHistory(callback: () => void): () => void {
     window.removeEventListener(EVENT, callback);
     window.removeEventListener("storage", callback);
   };
+}
+
+function safeUUID(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback for older browsers — random-enough for our purposes (history ids).
+  return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 10)}`;
 }

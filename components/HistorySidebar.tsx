@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import {
   clearHistory,
   deleteHistory,
@@ -18,8 +18,12 @@ export function HistorySidebar() {
   const [items, setItems] = useState<HistoryItem[]>([]);
   const [collapsed, setCollapsedState] = useState(false);
   const [mounted, setMounted] = useState(false);
-  const params = useSearchParams();
-  const currentQ = params.get("q") ?? "";
+  // The active history entry is identified by the id in the URL path:
+  // /search/{id}. Extract the id (or "" if we're not on a search page).
+  const pathname = usePathname() ?? "";
+  const currentId = pathname.startsWith("/search/")
+    ? pathname.slice("/search/".length)
+    : "";
 
   useEffect(() => {
     setMounted(true);
@@ -53,7 +57,7 @@ export function HistorySidebar() {
           <ExpandedView
             items={items}
             mounted={mounted}
-            currentQ={currentQ}
+            currentId={currentId}
             onCollapse={toggle}
           />
         )}
@@ -87,16 +91,16 @@ function CollapsedView({ onExpand }: { onExpand: () => void }) {
 function ExpandedView({
   items,
   mounted,
-  currentQ,
+  currentId,
   onCollapse,
 }: {
   items: HistoryItem[];
   mounted: boolean;
-  currentQ: string;
+  currentId: string;
   onCollapse: () => void;
 }) {
   const router = useRouter();
-  const [editingTs, setEditingTs] = useState<number | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [pendingDelete, setPendingDelete] = useState<HistoryItem | null>(null);
   const [pendingClear, setPendingClear] = useState(false);
 
@@ -154,32 +158,30 @@ function ExpandedView({
         ) : (
           <ul className="space-y-0.5">
             {items.map((h) => {
-              const isActive = h.query === currentQ;
+              const isActive = h.id === currentId;
               const display = h.label ?? h.query;
-              if (editingTs === h.ts) {
+              if (editingId === h.id) {
                 return (
-                  <li key={h.ts}>
+                  <li key={h.id}>
                     <RenameInput
                       initialValue={display}
                       onSave={(value) => {
-                        renameHistory(h.ts, value);
-                        setEditingTs(null);
+                        renameHistory(h.id, value);
+                        setEditingId(null);
                       }}
-                      onCancel={() => setEditingTs(null)}
+                      onCancel={() => setEditingId(null)}
                     />
                   </li>
                 );
               }
               return (
-                <li key={h.ts}>
+                <li key={h.id}>
                   <HistoryRow
                     item={h}
                     display={display}
                     isActive={isActive}
-                    onOpen={() =>
-                      router.push(`/search?q=${encodeURIComponent(h.query)}`)
-                    }
-                    onRename={() => setEditingTs(h.ts)}
+                    onOpen={() => router.push(`/search/${h.id}`)}
+                    onRename={() => setEditingId(h.id)}
                     onDelete={() => setPendingDelete(h)}
                   />
                 </li>
@@ -201,7 +203,7 @@ function ExpandedView({
         confirmLabel="Delete"
         destructive
         onConfirm={() => {
-          if (pendingDelete) deleteHistory(pendingDelete.ts);
+          if (pendingDelete) deleteHistory(pendingDelete.id);
           setPendingDelete(null);
         }}
         onCancel={() => setPendingDelete(null)}
