@@ -41,6 +41,7 @@ export function SearchInput({ initialValue = "", size = "lg", autoFocus = false 
           onChange={(e) => setValue(e.target.value)}
           placeholder="Ask anything"
           autoFocus={autoFocus}
+          maxLength={2000}
           className={`flex-1 bg-transparent ${padClass} text-ink placeholder:text-ink-muted focus:outline-none`}
           aria-label="Search"
         />

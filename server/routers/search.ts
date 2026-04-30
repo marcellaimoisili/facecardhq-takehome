@@ -6,12 +6,14 @@ import { fetchSources } from "../search/serp";
 import { parseLLMResponse, streamAnswer } from "../search/llm";
 
 // Input schema is shared between run + stream.
+// 2000 char cap matches SerpAPI's practical query limit; the LLMs handle
+// way more than that, so this is the binding constraint.
 const searchInput = z.object({
   query: z
     .string()
     .trim()
     .min(1, "Enter a question")
-    .max(500, "Question too long"),
+    .max(2000, "Question too long — try trimming to under 2000 characters"),
 });
 
 export const searchRouter = router({
