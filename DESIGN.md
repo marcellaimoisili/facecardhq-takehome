@@ -24,7 +24,7 @@ Warm neutrals with a single muted accent. Both themes share the same accent hue,
 | Border hover | `#D9D5CB` | Hover state for cards |
 | Accent | `#3F6B4E` | Primary action, link underline, citation chip |
 | Accent ink | `#FFFFFF` | Text on accent |
-| Error | `#B23A3A` | Desaturated to match palette |
+| Error | `#DC2626` | Saturated red for destructive actions |
 
 ### Dark
 
@@ -38,9 +38,11 @@ Warm neutrals with a single muted accent. Both themes share the same accent hue,
 | Border hover | `#3A3A2F` | Hover state for cards |
 | Accent | `#6FA882` | Brighter sage for contrast |
 | Accent ink | `#0F0F0B` | Dark ink on accent |
-| Error | `#D67373` | Brighter for contrast |
+| Error | `#EF4444` | Brighter saturated red |
 
-Theme switching: class-based on `<html>` (`light` / `dark`). Respect `prefers-color-scheme` on first visit, then user toggle persists in `localStorage`.
+Theme switching: class-based on `<html>` (`light` / `dark`).
+- **Default by time of day:** dark from 7pm to 7am local time, light otherwise.
+- **Explicit override wins:** once the user clicks the toggle, the choice is saved to `localStorage` and overrides the time-based default on every subsequent visit.
 
 ## Typography
 

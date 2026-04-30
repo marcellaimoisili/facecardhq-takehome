@@ -13,7 +13,7 @@
     --accent: 63 107 78;
     --accent-hover: 52 90 65;
     --accent-ink: 255 255 255;
-    --error: 178 58 58;
+    --error: 220 38 38;
   }
 
   .dark {
@@ -26,7 +26,7 @@
     --accent: 111 168 130;
     --accent-hover: 132 184 149;
     --accent-ink: 15 15 11;
-    --error: 214 115 115;
+    --error: 239 68 68;
   }
 
   html {
