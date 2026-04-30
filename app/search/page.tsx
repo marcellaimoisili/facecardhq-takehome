@@ -1,5 +1,4 @@
 import Link from "next/link";
-import { SearchInput } from "@/components/SearchInput";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { SearchResults } from "@/components/SearchResults";
 
@@ -23,24 +22,11 @@ export default async function SearchPage({ searchParams }: Props) {
   }
 
   return (
-    <main className="min-h-screen">
-      <header className="sticky top-0 z-20 border-b border-border bg-bg/85 backdrop-blur">
-        <div className="mx-auto flex max-w-[860px] items-center gap-3 px-6 py-3">
-          <Link
-            href="/"
-            className="font-mono text-[12px] tabular text-ink-muted hover:text-ink"
-            aria-label="Home"
-          >
-            search
-          </Link>
-          <div className="flex-1">
-            <SearchInput size="sm" initialValue={q} />
-          </div>
-          <ThemeToggle />
-        </div>
+    <main className="relative min-h-screen">
+      <header className="absolute right-6 top-6 z-10">
+        <ThemeToggle />
       </header>
-
-      <div className="mx-auto max-w-[860px] px-6 py-8">
+      <div className="mx-auto max-w-[860px] px-6 pb-16 pt-12">
         <SearchResults query={q} />
       </div>
     </main>
